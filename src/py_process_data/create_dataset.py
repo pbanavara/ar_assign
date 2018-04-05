@@ -15,7 +15,8 @@ class Dataset:
 
     def create_dataset(self, csv_file_path, dicom_dir_path, contour_dir_path):
         """
-
+        Function to create the dataset in raw form. The goal is to create 1-1 mappings between image files and their
+        respective masks. Uses the initial high level directory mapping provided by a CSV file.
         :param csv_file_path:
         :param dicom_dir_path:
         :param contour_dir_path:
@@ -50,17 +51,16 @@ class Dataset:
         :return: list of all contour files for that specific contour directory
         """
         contour_file_names = []
-        # path = os.path.join('final_data/contourfiles/', contour_dir)
         contour_dir_iterator = os.scandir(contour_dir)
         for d in contour_dir_iterator:
             if d.name == 'i-contours':
                 for file in os.scandir(d):
-                    # contour_file_names.append(file.name.split(".")[0].split("-")[2].lstrip('0'))
                     contour_file_names.append(file)
         return contour_file_names
 
     def _split_contour_file(self, x):
         """
+        Helper method to test the splitting of contour file path to get the most relevant part of the file path
 
         :param x: contour file name containing the absolute path
         :return: just the filename without any extensions
@@ -70,6 +70,7 @@ class Dataset:
 
     def _split_dicom_file(self, x):
         """
+        Helper method to split the dicom file path to extract the most relevant part of the filename
 
         :param x:
         :return:
@@ -79,10 +80,12 @@ class Dataset:
 
     def _create_dicom_mask_map(self, d_files, c_files):
         """
-
+        Helper method to map the dicom file and the mask file. This is done by brute force looping
+        which isn't the most ideal way, since the data volume is small this works.
+        The matchig is done using the relevant parts of the filenames.
         :param d_files:
         :param c_files:
-        :return:
+        :return: An array containing the dicom file -> mask file maps
         """
         c_files_no_ext = list(map(self._split_contour_file, c_files))
         d_files_no_ext = list(map(self._split_dicom_file, d_files))

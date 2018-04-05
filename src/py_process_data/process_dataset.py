@@ -29,6 +29,7 @@ class ProcessDataset:
         :param sample_size:
         :return:
         """
+        final_numpy_data = []
         for e in range(epochs):
             sample = np.random.choice(data, sample_size)
             images = []
@@ -40,4 +41,6 @@ class ProcessDataset:
                     masks.append(mask)
             images_np = np.asarray(images)
             masks_np = np.asarray(masks)
-            return images_np, masks_np
+            # Todo build the neural net from these images and masks
+            final_numpy_data.append((images_np, masks_np))
+        return final_numpy_data
