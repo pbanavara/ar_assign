@@ -13,7 +13,15 @@ class TestDatasetCreate(unittest.TestCase):
 
     def test_parse_dicom_file(self):
         dicom_file = os.path.abspath('../final_data/dicoms/SCD0000101/1.dcm')
-        npt.assert_almost_equal(parsing.parse_dicom_file(dicom_file)['pixel_data'].shape, (256, 256))
+        npt.assert_almost_equal(parsing.parse_dicom_file(dicom_file).shape, (256, 256))
+
+    def test_parse_dicom_file(self):
+        """
+        Negative test case for non existant DICOM file
+        :return:
+        """
+        dicom_file = os.path.abspath('../final_data/dicoms/SCD0000101/0.dcm')
+        npt.assert_almost_equal(parsing.parse_dicom_file(dicom_file).shape, (256, 256))
 
     def test_dicom_mask_map(self):
         d_files = ['/Users/pbanavara/dev/ar_assign/final_data/dicoms/SCD0000101/128.dcm']

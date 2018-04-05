@@ -13,41 +13,40 @@ def parse_contour_file(filename):
     :return: list of tuples holding x, y coordinates of the contour
     """
     coords_lst = []
-    with open(filename, 'r') as infile:
-        for line in infile:
-            coords = line.strip().split()
-
-            x_coord = float(coords[0])
-            y_coord = float(coords[1])
-            coords_lst.append((x_coord, y_coord))
-    return coords_lst
+    try:
+        with open(filename, 'r') as infile:
+            for line in infile:
+                coords = line.strip().split()
+                x_coord = float(coords[0])
+                y_coord = float(coords[1])
+                coords_lst.append((x_coord, y_coord))
+        return coords_lst
+    except EnvironmentError:
+        print("File not found most likely")
+        return coords_lst
 
 
 def parse_dicom_file(filename):
     """Parse the given DICOM filename
 
     :param filename: filepath to the DICOM file to parse
-    :return: dictionary with DICOM image data
+    :return: DICOM image data
     """
 
     try:
         dcm = pydicom.read_file(filename)
         dcm_image = dcm.pixel_array
-
         try:
             intercept = dcm.RescaleIntercept
-        except AttributeError:
-            intercept = 0.0
-        try:
             slope = dcm.RescaleSlope
         except AttributeError:
+            intercept = 0.0
             slope = 0.0
 
         if intercept != 0.0 and slope != 0.0:
             dcm_image = dcm_image*slope + intercept
-        dcm_dict = {'pixel_data' : dcm_image}
-        return dcm_dict
-    except InvalidDicomError:
+        return dcm_image
+    except (InvalidDicomError, EnvironmentError) as e:
         return None
 
 

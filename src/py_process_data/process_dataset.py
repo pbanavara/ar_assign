@@ -7,26 +7,28 @@ This class encapsulates part 2 of the assignment. The dataset is converted into 
 specified epochs and sample size.
 """
 
+
 class ProcessDataset:
 
     def _parse_files(self, dicom_file, contour_file):
         """
+        Helper method to parse the dicom and contour files
 
-        :param dicom_file:
-        :param contour_file:
-        :return:
+        :param dicom_file: DICOM file name
+        :param contour_file: Contour file name
+        :return: Numpy array represetatios of dicom file and label mask
         """
-        np_d = parsing.parse_dicom_file(os.path.abspath(dicom_file))['pixel_data']
+        np_d = parsing.parse_dicom_file(os.path.abspath(dicom_file))
         polys = parsing.parse_contour_file(contour_file)
         mask = parsing.poly_to_mask(polys, np_d.shape[0], np_d.shape[1])
         return np_d, mask
 
     def create_random_sample(self, data, epochs, sample_size):
         """
-
-        :param data:
-        :param epochs:
-        :param sample_size:
+        For the given epoch and sample size, this function creates a random sample of sample_size images per epoch
+        :param data: The original master dataset - A list of dict mappings between image -> mask
+        :param epochs: No of epochs
+        :param sample_size: Size of each sample per epoch
         :return:
         """
         final_numpy_data = []

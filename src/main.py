@@ -36,8 +36,7 @@ def main(csv_file, dicom_dir, contour_dir, epochs, sample_size):
     plt.savefig(SAMPLE_FILE_NAME)
     plt.imshow(np.hstack(image_mask_list[0][1]))
     plt.savefig(MASK_FILE_NAME)
-
-
+    return
 
 
 if __name__ == "__main__":
