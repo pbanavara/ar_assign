@@ -1,0 +1,12 @@
+Metadata-Version: 1.0
+Name: py-process-data
+Version: 0.1
+Summary: A module for creating a dataset given a set of dicom files and their contours
+Home-page: https://github.com/pbanavara/ar_assign.git
+Author: Pradeep Banavara
+Author-email: pradeepbs@gmail.com
+License: UNKNOWN
+Description-Content-Type: UNKNOWN
+Description: UNKNOWN
+Keywords: dicom, mask
+Platform: UNKNOWN
