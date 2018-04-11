@@ -10,18 +10,20 @@ specified epochs and sample size.
 
 class ProcessDataset:
 
-    def _parse_files(self, dicom_file, contour_file):
+    def _parse_files(self, dicom_file, contour_files):
         """
         Helper method to parse the dicom and contour files
 
         :param dicom_file: DICOM file name
         :param contour_file: Contour file name
-        :return: Numpy array represetatios of dicom file and label mask
+        :return: Numpy array represetatios of dicom file and label masks of both inner and outer contours
         """
         np_d = parsing.parse_dicom_file(os.path.abspath(dicom_file))
-        polys = parsing.parse_contour_file(contour_file)
-        mask = parsing.poly_to_mask(polys, np_d.shape[0], np_d.shape[1])
-        return np_d, mask
+        i_polys = parsing.parse_contour_file(contour_files[0])
+        o_polys = parsing.parse_contour_file(contour_files[1])
+        i_mask = parsing.poly_to_mask(i_polys, np_d.shape[0], np_d.shape[1])
+        o_mask = parsing.poly_to_mask(o_polys, np_d.shape[0], np_d.shape[1])
+        return np_d, (i_mask, o_mask)
 
     def create_random_sample(self, data, epochs, sample_size):
         """
@@ -38,11 +40,10 @@ class ProcessDataset:
             masks = []
             for s in sample:
                 for d, c in s.items():
-                    np_d, mask = self._parse_files(d, c)
+                    np_d, i_o_mask = self._parse_files(d, c)
                     images.append(np_d)
-                    masks.append(mask)
+                    masks.append(i_o_mask)
             images_np = np.asarray(images)
-            masks_np = np.asarray(masks)
             # Todo build the neural net from these images and masks
-            final_numpy_data.append((images_np, masks_np))
+            final_numpy_data.append((images_np, masks))
         return final_numpy_data

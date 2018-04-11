@@ -4,6 +4,10 @@ import os
 from py_process_data.process_dataset import ProcessDataset
 import numpy as np
 import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw
+from shapely.geometry import Point
+from shapely.geometry import Polygon
+
 
 SAMPLE_FILE_NAME = 'sample.png'
 MASK_FILE_NAME = 'sample_mask.png'
@@ -34,7 +38,8 @@ def main(csv_file, dicom_dir, contour_dir, epochs, sample_size):
         SAMPLE_FILE_NAME, MASK_FILE_NAME))
     plt.imshow(np.hstack(image_mask_list[0][0]))
     plt.savefig(SAMPLE_FILE_NAME)
-    plt.imshow(np.hstack(image_mask_list[0][1]))
+    masks = image_mask_list[0][1]
+    plt.imshow(np.hstack(masks[0]))
     plt.savefig(MASK_FILE_NAME)
     return
 

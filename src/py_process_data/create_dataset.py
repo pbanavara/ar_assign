@@ -28,8 +28,8 @@ class Dataset:
             dicom_dir = row[0]
             contour_dir = row[1]
             dicom_dir_files = self._read_dicom_files(os.path.join(dicom_dir_path, dicom_dir))
-            contour_dir_files = self._read_contour_files(os.path.join(contour_dir_path, contour_dir))
-            dataset.append(self._create_dicom_mask_map(dicom_dir_files, contour_dir_files))
+            i_contour_files, o_contour_files = self._read_contour_files(os.path.join(contour_dir_path, contour_dir))
+            dataset.append(self._create_dicom_contour_map(dicom_dir_files, i_contour_files, o_contour_files))
         self.data = [item for sublist in dataset for item in sublist]
 
     def _read_dicom_files(self, dicom_dir):
@@ -48,15 +48,28 @@ class Dataset:
         """
         Helper method to list all contour files in the specified directory
         :param contour_dir: Contour directory name
-        :return: list of all contour files for that specific contour directory
+        :return: list of both inner and outer contour files for that specific contour directory
         """
-        contour_file_names = []
+        i_contour_file_names = []
+        o_contour_file_names = []
         contour_dir_iterator = os.scandir(contour_dir)
         for d in contour_dir_iterator:
             if d.name == 'i-contours':
                 for file in os.scandir(d):
-                    contour_file_names.append(file)
-        return contour_file_names
+                    i_contour_file_names.append(file)
+            elif d.name == 'o-contours':
+                for file in os.scandir(d):
+                    o_contour_file_names.append(file)
+        i_files_no_ext = list(map(self._split_contour_file, i_contour_file_names))
+        o_files_no_ext = list(map(self._split_contour_file, o_contour_file_names))
+        # Find the common file names between i_contour and o_contour
+        commonalities = list(set(o_files_no_ext).intersection(i_files_no_ext))
+        f_i_contour_file_names = [i for i in i_contour_file_names if self._split_contour_file(i) in commonalities]
+        f_o_contour_file_names = [i for i in o_contour_file_names if self._split_contour_file(i) in commonalities]
+
+        return f_i_contour_file_names, f_o_contour_file_names
+
+
 
     def _split_contour_file(self, x):
         """
@@ -78,26 +91,34 @@ class Dataset:
         head, tail = os.path.split(x)
         return tail.split(".")[0]
 
-    def _create_dicom_mask_map(self, d_files, c_files):
+    def _create_dicom_contour_map(self, d_files, i_c_files, o_c_files):
         """
         Helper method to map the dicom file and the mask file. This is done by brute force looping
         which isn't the most ideal way, since the data volume is small this works.
         The matchig is done using the relevant parts of the filenames.
         :param d_files:
         :param c_files:
-        :return: An array containing the dicom file -> mask file maps
+        :return: An array containing the dicom file -> (i_contour, o_contour) file maps
         """
-        c_files_no_ext = list(map(self._split_contour_file, c_files))
+        i_c_files_no_ext = list(map(self._split_contour_file, i_c_files))
         d_files_no_ext = list(map(self._split_dicom_file, d_files))
-        commonalities = list(set(d_files_no_ext).intersection(c_files_no_ext))
+        commonalities = list(set(d_files_no_ext).intersection(i_c_files_no_ext))
         arr = []
+        i_c_f_names = list(map(lambda x: x.name, i_c_files))
+        o_c_f_names = list(map(lambda x: x.name, o_c_files))
         for c in commonalities:
-            for x in set(c_files):
-                if self._split_contour_file(x) == c:
+            for i, o in zip(sorted(i_c_f_names), sorted(o_c_f_names)):
+                if self._split_contour_file(i) == c:
                     for d in d_files:
                         if self._split_dicom_file(d) == c:
-                            arr.append({d: x})
+                            arr.append({d: (self._map_name_to_directory(i, i_c_files),
+                                            self._map_name_to_directory(o, o_c_files))})
         return arr
+
+    def _map_name_to_directory(self, x, files):
+        for f in files:
+            if x == f.name:
+                return f
 
     def get_data(self):
         """
